@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using TMPro;
-using Liv.Lck.GorillaTag;
+﻿using Liv.Lck.GorillaTag;
 using System;
+using TMPro;
+using UnityEngine;
 
 namespace GorillaCoconection.Behaviours
 {
@@ -16,6 +16,8 @@ namespace GorillaCoconection.Behaviours
 
         public void Start()
         {
+            Plugin.Logger.LogMessage($"+ CustomCoconutCamera: {(IsLocalCamera ? "local player" : Player.NickName)}");
+
             CoconutCamera coconut = GetComponent<CoconutCamera>();
             Transform visuals = coconut._visuals.transform;
 
@@ -25,18 +27,14 @@ namespace GorillaCoconection.Behaviours
                 return;
             }
 
-            GameObject gameObject = new(Constants.TagName);
+            GameObject gameObject = Instantiate(Plugin.Template);
+            gameObject.name = Constants.TagName;
             gameObject.transform.SetParent(visuals, false);
             gameObject.transform.localPosition = Vector3.up * 0.5f;
             gameObject.transform.localRotation = Quaternion.Euler(Vector3.up * 180f);
             gameObject.transform.localScale = Vector3.one * 0.06f;
-
-            playerNameTag = gameObject.AddComponent<TextMeshPro>();
-            playerNameTag.font = GorillaTagger.Instance.offlineVRRig.playerText1.font;
-            playerNameTag.overflowMode = TextOverflowModes.Overflow;
-            playerNameTag.enableWordWrapping = false;
-            playerNameTag.horizontalAlignment = HorizontalAlignmentOptions.Center;
-            playerNameTag.verticalAlignment = VerticalAlignmentOptions.Middle;
+            gameObject.SetActive(true);
+            playerNameTag = gameObject.GetComponent<TextMeshPro>();
 
             if (IsLocalCamera) VRRigCache.Instance.localRig.Rig.OnNameChanged += OnNameChanged;
             else VRRigCache.OnRigNameChanged += OnNameChanged; // TODO: test name change for other players
@@ -46,6 +44,8 @@ namespace GorillaCoconection.Behaviours
 
         public void OnDestroy()
         {
+            Plugin.Logger.LogMessage($"- CustomCoconutCamera: {(IsLocalCamera ? "local player" : Player.NickName)}");
+
             if (IsLocalCamera) VRRigCache.Instance.localRig.Rig.OnNameChanged -= OnNameChanged;
             else VRRigCache.OnRigNameChanged -= OnNameChanged;
 
@@ -70,7 +70,7 @@ namespace GorillaCoconection.Behaviours
                 NetPlayer player = IsLocalCamera ? NetworkSystem.Instance.GetLocalPlayer() : Player;
                 playerNameTag.text = VRRigCache.rigsInUse.TryGetValue(player, out RigContainer playerRig) ? (playerRig.Rig.playerNameVisible ?? player.NickName) : player.NickName;
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }
