@@ -55,8 +55,15 @@ namespace GorillaCoconection.Behaviours
 
         public void OnNameChanged(RigContainer playerRig)
         {
-            if (IsLocalCamera ? (VRRigCache.Instance.localRig != playerRig) : (playerRig.Creator != Player)) return;
-            UpdateName();
+            try
+            {
+                if (IsLocalCamera ? (VRRigCache.Instance.localRig != playerRig) : (playerRig.Creator != Player)) return;
+                UpdateName();
+            }
+            catch(Exception)
+            {
+
+            }
         }
 
         public void UpdateName()
